@@ -1,8 +1,8 @@
-# <img src="https://github.com/Astropilot/EDTVelizy/blob/master/app/src/main/ic_logo-web.png" height="48px" width="48px" title="Icon" alt="Icon"/> EDTVelizy
+# <img src="https://github.com/Astropilot/EDTVelizy/blob/master/app/src/main/ic_logo-web.png" height="437px" width="246px" title="Icon" alt="Icon"/> EDTVelizy
 
 **EDTVélizy** est une application mobile android de l'emploi du temps de l'IUT de Vélizy
 
-![Interface](http://astropilot.altervista.org/appli/interface3.png)
+<img src="http://astropilot.altervista.org/appli/interface3.png" height="48px" width="48px" title="Interface" alt="Interface"/>
 
 ## Caractéristiques
 
