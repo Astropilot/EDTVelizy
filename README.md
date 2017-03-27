@@ -8,19 +8,19 @@
 
 * Léger
 * Peu gourmand en internet
-* ~~ Suivi de l'emploi du temps ~~
+* ~~Suivi de l'emploi du temps~~
 * Mode Hors-Ligne
 * Code source libre
 * Développé directement par un étudiant de l'IUT de Vélizy
 
 ## Changelog
 
-** Version b1.1 **
+**Version b1.1**
 * Correction du tactile
 * Ajout du bouton retour sur l'emploi du temps
 * Correction du saut à 8h
 
-** Version b1.0 **
+**Version b1.0**
 * Affichage de l'emploi du temps
 * Mode Hors-Ligne
 
