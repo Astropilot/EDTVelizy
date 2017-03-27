@@ -27,3 +27,7 @@
 ## Licence
 
 Cette application est donnée sous licence GNU v3.0
+
+Et
+
+![Licence](https://licensebuttons.net/l/by-nc/4.0/88x31.png)
