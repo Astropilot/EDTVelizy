@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_edt"
+            android:icon="@mipmap/ic_event"
+            android:title="Emploi du temps" />
+        <item
+            android:id="@+id/nav_suivi"
+            android:icon="@mipmap/ic_history"
+            android:title="!(Historique du suivi)" />
+        <item
+            android:id="@+id/nav_retour"
+            android:icon="@mipmap/ic_back_arrow"
+            android:title="Retour à la page suivante" />
+    </group>
+
+</menu>

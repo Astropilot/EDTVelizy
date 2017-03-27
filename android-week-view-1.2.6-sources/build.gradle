@@ -1,0 +1,2 @@
+configurations.create("default")
+artifacts.add("default", file('android-week-view-1.2.6-sources.jar'))

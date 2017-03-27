@@ -1,0 +1,28 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".MyActivity" >
+    <item android:id="@+id/action_today"
+        android:title="Aujourd'hui"
+        android:orderInCategory="100"
+        app:showAsAction="ifRoom"/>
+    <item android:id="@+id/suivi_edt"
+        android:title="Suivre"
+        android:orderInCategory="100"
+        app:showAsAction="ifRoom"/>
+    <group android:checkableBehavior="single">
+        <item android:id="@+id/action_day_view"
+            android:title="1 jour"
+            android:orderInCategory="100"
+            app:showAsAction="ifRoom"/>
+        <item android:id="@+id/action_three_day_view"
+            android:title="3 jours"
+            android:orderInCategory="100"
+            app:showAsAction="ifRoom"
+            android:checked="true"/>
+        <item android:id="@+id/action_week_view"
+            android:title="Semaine"
+            android:orderInCategory="100"
+            app:showAsAction="ifRoom"/>
+    </group>
+</menu>

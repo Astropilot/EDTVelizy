@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">EDTVelizy</string>
+    <string name="login_group_url">http://satis.iut-velizy.uvsq.fr/EDT/gindex.html</string>
+    <string name="edt_url">http://satis.iut-velizy.uvsq.fr/EDT/</string>
+    <string name="credits">Calendrier: Android Week View de Raquib-ul-Alam\n\nXML Parser: Simple (v2.7.1)\n\nInternet: OkHttp v3 de Square</string>
+    <string name="title_activity_navigate">NavigateActivity</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>
