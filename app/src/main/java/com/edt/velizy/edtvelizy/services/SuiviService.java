@@ -7,15 +7,22 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.WakefulBroadcastReceiver;
+import android.util.Log;
 
 import com.edt.velizy.edtvelizy.R;
 import com.edt.velizy.edtvelizy.activities.LoginActivity;
+import com.edt.velizy.edtvelizy.activities.NavigateActivity;
+import com.edt.velizy.edtvelizy.historique.Evenement;
+import com.edt.velizy.edtvelizy.historique.Historique;
 import com.edt.velizy.edtvelizy.timetable.EDTJours;
 import com.edt.velizy.edtvelizy.timetable.EDTSemaines;
 import com.edt.velizy.edtvelizy.timetable.timetable;
 import com.edt.velizy.edtvelizy.utils.AlarmManager;
+import com.edt.velizy.edtvelizy.utils.FileIO;
 import com.edt.velizy.edtvelizy.utils.Internet;
+import com.edt.velizy.edtvelizy.utils.PrefManager;
 
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
@@ -28,6 +35,7 @@ import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -54,11 +62,15 @@ public class SuiviService extends IntentService {
 
         WakefulBroadcastReceiver.completeWakefulIntent(intent);
 
-        //if(intent.getAction().contains("BOOT_COMPLETED")) {
-         //   scheduleAlarm();
-           // return;
-        //}
+        PrefManager prefs = new PrefManager(this);
 
+        // Si on detecte le démarrage du téléphone et si le suivi a été activé avant et que l'utilisateur l'autorise, on active notre alarme
+        if(intent.getStringExtra("action").contains("BOOT_COMPLETED") && prefs.getSuiviActive() && prefs.getSuiviOnBoot()){
+            AlarmManager.scheduleAlarm(this);
+            return;
+        }
+
+        // Si on n'est pas au démarrage, on vérifie alors que l'alarme est bien lancé pour poursuivre
         if(!AlarmManager.checkAlarm(this))
             return;
 
@@ -70,11 +82,9 @@ public class SuiviService extends IntentService {
         // On récupère le l'identifiant de l'emploi du temps puis
         // on télécharge l'emploi du temps actuel
 
-        SharedPreferences pref = getSharedPreferences("Prefs",
-                Context.MODE_PRIVATE);
-        EdtID = pref.getString("EDT_ID", "No");
-        cID = pref.getString("USERNAME_LOGIN", "");
-        cPass = pref.getString("PASSWORD_LOGIN", "");
+        EdtID = prefs.getEdtID();
+        cID = prefs.getUsername();
+        cPass = prefs.getPassword();
 
         String current_EDT = Internet.retrieve(getString(R.string.edt_url) + EdtID + ".xml", cID, cPass);
 
@@ -85,7 +95,7 @@ public class SuiviService extends IntentService {
 
         // On récupère l'ancien EDT (oldedt.edt)
 
-        String old_EDT = "";//readFromFile("oldedt.edt");
+        String old_EDT = FileIO.ReadFile(this, "oldedt.edt");
 
         // On prépare l'EDT courant
 
@@ -93,55 +103,63 @@ public class SuiviService extends IntentService {
 
         // On applique l'algorithme de comparaison
 
-        String notif = "";//CompareEDT(old_EDT, current_EDT);
+        boolean notif = CompareEDT(old_EDT, current_EDT);
 
         // On fait de l'EDT courant l'ancien EDT
 
-        //try {
-        //    OutputStreamWriter outputStreamWriter = new OutputStreamWriter(openFileOutput("oldedt.edt", Context.MODE_PRIVATE));
-        //    outputStreamWriter.write(current_EDT); // TODO: Remplacer par le EDT courant
-        //    outputStreamWriter.close();
-        //} catch (IOException e) {
-        //    Log.e("Exception", e.toString());
-        //}
+        FileIO.WriteFile(this, "oldedt.edt", current_EDT);
 
         // Si aucun changement détecté on quitte le service
-        if(notif.equals(""))
-            notif = "Rien !";
-            //return;
+        if(!notif)
+            return;
 
-        // Sinon on affiche une notification avec en texte les différences trouvées
+        // Sinon on affiche une notification
 
         NotificationManager mNotification = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
-         Intent launchNotifiactionIntent = new Intent(this, LoginActivity.class);
-         PendingIntent pendingIntent = PendingIntent.getActivity(this,
+        Intent launchNotifiactionIntent = new Intent(this, NavigateActivity.class);
+        launchNotifiactionIntent.putExtra("action", "HISTO");
+        PendingIntent pendingIntent = PendingIntent.getActivity(this,
                 1234, launchNotifiactionIntent,
                 PendingIntent.FLAG_ONE_SHOT);
 
-        Notification.Builder builder = new Notification.Builder(this)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
                 .setWhen(System.currentTimeMillis())
                 .setTicker("Modification de l'EDT !")
                 .setSmallIcon(R.mipmap.ic_logo)
                 .setContentTitle("L'emploi du temps à été modifé !")
-                .setContentText(notif)
-                .setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE)
+                .setDefaults(NotificationCompat.DEFAULT_SOUND | NotificationCompat.DEFAULT_VIBRATE)
+                .setContentText("Cliquez pour voir les changements")
+                .setAutoCancel(true)
                 .setContentIntent(pendingIntent);
 
         mNotification.notify(101, builder.build());
     }
 
     /**
-     * Permet de comparer deux emploi du temps et rendre les différences trouvées
+     * Permet de comparer deux emploi du temps et de sauvegarder les différences trouvées
      *
      * @param edt1 le premier emploi du temps
      * @param edt2 le deuxieme emploi du temps
-     * @return toutes les différences
+     * @return true si une/plusieurs différence(s), sinon false
      */
-    private String CompareEDT(String edt1, String edt2) {
+    private boolean CompareEDT(String edt1, String edt2) {
         String differences = "";
         timetable old_EDT;
         timetable current_EDT;
+
+        // On initialise tout ce qui concerne l'historique
+
+        Historique historique;
+
+        Evenement evenement = new Evenement();
+        evenement.setDate(new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.FRANCE).format(Calendar.getInstance().getTime()));
+
+        if (FileIO.isHistoriqueExist(this))
+            historique = FileIO.getHistorique(this);
+        else {
+            historique = new Historique(new ArrayList<Evenement>());
+        }
 
         //On sérialise nos deux emploi du temps pour les avoir dans des objets
 
@@ -151,7 +169,7 @@ public class SuiviService extends IntentService {
             serializer = new Persister();
             current_EDT = serializer.read(timetable.class, edt2, false);
         } catch (Exception e) {
-            return "";
+            return false;
         }
 
         // On modifie les getRawweeks des cours par la date de la semaine pour les deux emplois du temps
@@ -181,6 +199,8 @@ public class SuiviService extends IntentService {
         // On regarde si il existe une semaine supérieur dans le nouveau emploi du temps
         SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy", Locale.FRANCE);
         Date OldDate = new Date();
+        String semaine_blacklisted = "";
+        String semaine_blacklisted2 = "";
         try {
             OldDate = format.parse(derniereDate_OldDate);
         } catch (ParseException e) {
@@ -195,7 +215,9 @@ public class SuiviService extends IntentService {
                 e.printStackTrace();
             }
             if(OldDate.compareTo(date) == -1) {
-                return "Nouvelle semaine : " + semaine.getDate();
+                differences += "Nouvelle semaine : " + semaine.getDate() + "{n}{n}";
+                semaine_blacklisted = semaine.getDate();
+                semaine_blacklisted2 = old_EDT.getSpan().get(0).getDate();
             }
         }
 
@@ -210,45 +232,58 @@ public class SuiviService extends IntentService {
         for(EDTJours cours : old_EDT.getEvent()) {
             boolean found = false;
             for(EDTJours cours2 : current_EDT.getEvent()) {
-                if( cours.getRawweeks().equals(cours2.getRawweeks()) && cours.getStarttime().equals(cours2.getStarttime()) && cours.getEndtime().equals(cours2.getEndtime()) && cours.geteID().equals(cours2.geteID()) && cours.getDay().equals(cours2.getDay())) {
+                if( cours.getRawweeks().equals(cours2.getRawweeks()) && cours.getStarttime().equals(cours2.getStarttime()) && cours.getEndtime().equals(cours2.getEndtime()) && cours.getDay().equals(cours2.getDay())) {
                     found = true;
                 }
             }
-            if(!found) liste_cours_non_edt_courant.add(cours);
+            if(!found && !cours.getRawweeks().equals(semaine_blacklisted2)) liste_cours_non_edt_courant.add(cours);
         }
 
         // On ajoute les nouveaux cours dans la deuxième liste si ils ne sont pas dans l'ancien EDT
+        // On ignore les cours qui sont dans la semaine black listée
         for(EDTJours cours : current_EDT.getEvent()) {
             boolean found = false;
             for(EDTJours cours2 : old_EDT.getEvent()) {
-                if( cours.getRawweeks().equals(cours2.getRawweeks()) && cours.getStarttime().equals(cours2.getStarttime()) && cours.getEndtime().equals(cours2.getEndtime()) && cours.geteID().equals(cours2.geteID()) && cours.getDay().equals(cours2.getDay())) {
+                if( cours.getRawweeks().equals(cours2.getRawweeks()) && cours.getStarttime().equals(cours2.getStarttime()) && cours.getEndtime().equals(cours2.getEndtime()) && cours.getDay().equals(cours2.getDay())) {
                     found = true;
                 }
             }
-            if(!found) liste_cours_non_edt_ancien.add(cours);
+            if(!found && !cours.getRawweeks().equals(semaine_blacklisted)) liste_cours_non_edt_ancien.add(cours);
         }
 
         // On vérifie si Suppressions
 
         // C'est le reste des éléments du liste_cours_non_edt_courant
         for(EDTJours cours : liste_cours_non_edt_courant) {
+            cours.setAjout(false);
             if(cours.getResources().getModule() != null)
-                differences += "- " + cours.getResources().getModule().toString() + " le " + createFullDate(cours) + "\n";
+                differences += "- " + cours.getResources().getModule().toString() + " le " + createFullDate(cours) + "{n}";
             else
-                differences += "- " + createFullDate(cours) + "\n";
+                differences += "- " + createFullDate(cours) + "{n}";
         }
 
         // On vérifie si Ajout
 
         // C'est le reste des éléments du liste_cours_non_edt_ancien
         for(EDTJours cours : liste_cours_non_edt_ancien) {
+            cours.setAjout(true);
             if(cours.getResources().getModule() != null)
-                differences += "+ " + cours.getResources().getModule().toString() + " le " + createFullDate(cours) + "\n";
+                differences += "+ " + cours.getResources().getModule().toString() + " le " + createFullDate(cours) + "{n}";
             else
-                differences += "+ " + createFullDate(cours) + "\n";
+                differences += "+ " + createFullDate(cours) + "{n}";
         }
 
-        return differences;
+        // On écrit l'historique si il y a eu du nouveau
+
+        if(!differences.equals("")) {
+            evenement.setDescription(differences);
+            historique.addEvent(evenement);
+            boolean test = FileIO.setHistorique(this, historique);
+            Log.i("TEST_HISTO", String.valueOf(test));
+        }
+
+
+        return (!differences.equals(""));
     }
 
     /**

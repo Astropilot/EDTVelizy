@@ -8,13 +8,22 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 
 import com.edt.velizy.edtvelizy.fragments.EDTFragment;
 import com.edt.velizy.edtvelizy.R;
+import com.edt.velizy.edtvelizy.fragments.HistoriqueFragment;
+import com.edt.velizy.edtvelizy.fragments.SettingsFragment;
+import com.edt.velizy.edtvelizy.utils.FileIO;
+import com.edt.velizy.edtvelizy.utils.PrefManager;
 
 public class NavigateActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    private String xmlEDT;
+
+    private String EdtID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,19 +33,36 @@ public class NavigateActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         final Intent i = getIntent();
+        final PrefManager prefs = new PrefManager(this);
 
-        String xmlEDT = i.getStringExtra(ChooseGroupActivity.DownloadEDTTask.mEDT);
-        if(!xmlEDT.startsWith("<timetable>")) {
-            xmlEDT = ChangeXml(xmlEDT);
+        // Si cette activité est lancé par une notification de Suivi, on lance directement
+        // l'historique et on bloque le menu
+
+        if(i.getStringExtra("action") != null && i.getStringExtra("action").equals("HISTO")) {
+            xmlEDT = FileIO.ReadFile(this, "oldedt.edt");
+            EdtID = prefs.getEdtID();
+            HistoriqueFragment fragment = HistoriqueFragment.newInstance("", "");
+            android.support.v4.app.FragmentTransaction fragmentTransaction =
+                    getSupportFragmentManager().beginTransaction();
+            fragmentTransaction.replace(R.id.fragment_container, fragment);
+            fragmentTransaction.commit();
         }
-        String EdtID = i.getStringExtra(ChooseGroupActivity.DownloadEDTTask.mEDTID);
+        // Sinon on récupère les informations normalement et on lance directement
+        // l'emploi du temps
+        else {
 
-        EDTFragment fragment = EDTFragment.newInstance(xmlEDT, EdtID);
-        android.support.v4.app.FragmentTransaction fragmentTransaction =
-                getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.replace(R.id.fragment_container, fragment);
-        fragmentTransaction.commit();
+            xmlEDT = i.getStringExtra(ChooseGroupActivity.DownloadEDTTask.mEDT);
+            if (!xmlEDT.startsWith("<timetable>")) {
+                xmlEDT = ChangeXml(xmlEDT);
+            }
+            EdtID = i.getStringExtra(ChooseGroupActivity.DownloadEDTTask.mEDTID);
 
+            EDTFragment fragment = EDTFragment.newInstance(xmlEDT, EdtID);
+            android.support.v4.app.FragmentTransaction fragmentTransaction =
+                    getSupportFragmentManager().beginTransaction();
+            fragmentTransaction.replace(R.id.fragment_container, fragment);
+            fragmentTransaction.commit();
+        }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -69,9 +95,23 @@ public class NavigateActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_edt) {
-            // Afficher ici l'emploi du temps
+            EDTFragment fragment = EDTFragment.newInstance(xmlEDT, EdtID);
+            android.support.v4.app.FragmentTransaction fragmentTransaction =
+                    getSupportFragmentManager().beginTransaction();
+            fragmentTransaction.replace(R.id.fragment_container, fragment);
+            fragmentTransaction.commit();
         } else if (id == R.id.nav_suivi) {
-            // TODO: afficher l'historique du suivi
+            HistoriqueFragment fragment = HistoriqueFragment.newInstance("", "");
+            android.support.v4.app.FragmentTransaction fragmentTransaction =
+                    getSupportFragmentManager().beginTransaction();
+            fragmentTransaction.replace(R.id.fragment_container, fragment);
+            fragmentTransaction.commit();
+        } else if (id == R.id.nav_settings) {
+            SettingsFragment fragment = SettingsFragment.newInstance("", "");
+            android.support.v4.app.FragmentTransaction fragmentTransaction =
+                    getSupportFragmentManager().beginTransaction();
+            fragmentTransaction.replace(R.id.fragment_container, fragment);
+            fragmentTransaction.commit();
         } else if (id == R.id.nav_retour) {
             finish();
         }

@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.RectF;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AlertDialog;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -27,6 +28,7 @@ import com.edt.velizy.edtvelizy.timetable.EDTSemaines;
 import com.edt.velizy.edtvelizy.timetable.timetable;
 import com.edt.velizy.edtvelizy.utils.AlarmManager;
 import com.edt.velizy.edtvelizy.utils.FileIO;
+import com.edt.velizy.edtvelizy.utils.PrefManager;
 
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
@@ -104,6 +106,11 @@ public class EDTFragment extends Fragment implements MonthLoader.MonthChangeList
     private Menu menu;
 
     /**
+     * Les préférences de l'application
+     */
+    private PrefManager prefs;
+
+    /**
      * Le constructeur par défaut
      */
     public EDTFragment() {
@@ -147,9 +154,8 @@ public class EDTFragment extends Fragment implements MonthLoader.MonthChangeList
         View view = inflater.inflate(R.layout.fragment_edt, container, false);
 
         // On met à jour l'id de l'emploi du temps dans les préférences
-        SharedPreferences.Editor pref = getActivity().getSharedPreferences("Prefs", Context.MODE_PRIVATE).edit();
-        pref.putString("EDT_ID", EdtID);
-        pref.commit();
+        prefs = new PrefManager(getActivity());
+        prefs.setEdtID(EdtID);
 
         // On sauvegarde l'emploi du temps qu'on vient de télécharger
         FileIO.WriteFile(getActivity(), "oldedt.edt", xmlEDT);
@@ -255,11 +261,9 @@ public class EDTFragment extends Fragment implements MonthLoader.MonthChangeList
                 return true;
             case R.id.suivi_edt:
                 if(suiviItem.getTitle() == "Suivre") {
-                    /*SharedPreferences pref = getActivity().getSharedPreferences("Prefs",
-                            Context.MODE_PRIVATE);
-                    EdtID = pref.getString("EDT_ID", "No");
-                    String cID = pref.getString("USERNAME_LOGIN", "");
-                    String cPass = pref.getString("PASSWORD_LOGIN", "");
+                    EdtID = prefs.getEdtID();
+                    String cID = prefs.getUsername();
+                    String cPass = prefs.getPassword();
                     if(cID.equals("") || cPass.equals("")) {
                         AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
                         alertDialog.setTitle("Attention");
@@ -272,10 +276,10 @@ public class EDTFragment extends Fragment implements MonthLoader.MonthChangeList
                                 });
                         alertDialog.show();
                     } else {
-                        scheduleAlarm();
+                        AlarmManager.scheduleAlarm(getActivity());
                         suiviItem.setTitle("Stop suivi");
-                    }*/
-                    AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
+                    }
+                    /*AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
                     alertDialog.setTitle("Information");
                     alertDialog.setMessage("Cette fonctionnalité n'est pas encore disponible, elle le sera bientôt :)");
                     alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
@@ -284,7 +288,7 @@ public class EDTFragment extends Fragment implements MonthLoader.MonthChangeList
                                     dialog.dismiss();
                                 }
                             });
-                    alertDialog.show();
+                    alertDialog.show();*/
                 } else {
                     AlarmManager.cancelAlarm(getActivity());
                     suiviItem.setTitle("Suivre");

@@ -64,6 +64,13 @@ public class EDTJours {
     @Element(name="notes", required = false)
     private String notes;
 
+    /**
+     * Cet attribut n'est utilisé que pour l'historique de suivi,
+     * il sert a savoir si l'evenement à été ajouté ou supprimé
+     */
+    @Attribute(name="ajout", required = false)
+    private boolean ajout;
+
     // Accesseurs et modifieurs
 
 
@@ -130,4 +137,12 @@ public class EDTJours {
     public String getNotes() { return notes; }
 
     public void setNotes(String notes) { this.notes = notes; }
+
+    public boolean isAjout() {
+        return ajout;
+    }
+
+    public void setAjout(boolean ajout) {
+        this.ajout = ajout;
+    }
 }

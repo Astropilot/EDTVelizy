@@ -20,6 +20,7 @@ import com.edt.velizy.edtvelizy.R;
 import com.edt.velizy.edtvelizy.utils.FileIO;
 import com.edt.velizy.edtvelizy.utils.HuaweiDetection;
 import com.edt.velizy.edtvelizy.utils.Internet;
+import com.edt.velizy.edtvelizy.utils.PrefManager;
 
 
 public class LoginActivity extends AppCompatActivity {
@@ -43,11 +44,10 @@ public class LoginActivity extends AppCompatActivity {
 
         // On récupère l'utilisateur et le mot de passe (si existant) et l'ID de l'emploi du temps qui n'est pas nul si
         // l'emploi du temps à déjà été chargé une fois
-        SharedPreferences pref = getSharedPreferences("Prefs",
-                Context.MODE_PRIVATE);
-        String Username = pref.getString("USERNAME_LOGIN", "");
-        String Password = pref.getString("PASSWORD_LOGIN", "");
-        final String eID = pref.getString("EDT_ID", "");
+        final PrefManager prefs = new PrefManager(this);
+        String Username = prefs.getUsername();
+        String Password = prefs.getPassword();
+        final String eID = prefs.getEdtID();
 
         Button horsligneButton = (Button) findViewById(R.id.button_horsligne);
 
@@ -77,17 +77,14 @@ public class LoginActivity extends AppCompatActivity {
                 CheckBox saveID = (CheckBox) findViewById(R.id.check_SaveID);
 
                 // Si l'utilisateur veux sauvegarder les identifiant on le fait
-                SharedPreferences.Editor pref = getSharedPreferences("Prefs",
-                        Context.MODE_PRIVATE).edit();
                 if(saveID.isChecked()) {
-                    pref.putString("USERNAME_LOGIN", username.getText().toString());
-                    pref.putString("PASSWORD_LOGIN", password.getText().toString());
+                    prefs.setUsername(username.getText().toString());
+                    prefs.setPassword(password.getText().toString());
                 }
                 else {
-                    pref.putString("USERNAME_LOGIN", "");
-                    pref.putString("PASSWORD_LOGIN", "");
+                    prefs.setUsername("");
+                    prefs.setPassword("");
                 }
-                pref.commit();
 
                 // On affiche une boite de dialogue d'attente
                 mDialog = new ProgressDialog(LoginActivity.this);

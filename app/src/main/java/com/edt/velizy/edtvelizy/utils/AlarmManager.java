@@ -12,6 +12,8 @@ import com.edt.velizy.edtvelizy.services.MyAlarmReceiver;
  */
 public class AlarmManager {
 
+    private static final long TEMPS_30MIN = android.app.AlarmManager.INTERVAL_HALF_HOUR;
+
     /**
      * Créé une alarme toutes les 2h pour executer notre service
      * @param context le contexte
@@ -22,7 +24,9 @@ public class AlarmManager {
         PendingIntent pIntent = PendingIntent.getBroadcast(context, MyAlarmReceiver.REQUEST_CODE, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         long firstMillis = System.currentTimeMillis();
         android.app.AlarmManager alarm = (android.app.AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        alarm.setInexactRepeating(android.app.AlarmManager.RTC_WAKEUP, firstMillis, 60000, pIntent);
+        alarm.setInexactRepeating(android.app.AlarmManager.RTC_WAKEUP, firstMillis, TEMPS_30MIN, pIntent);
+        PrefManager prefs = new PrefManager(context);
+        prefs.setSuiviActive(true);
     }
 
     /**
@@ -36,6 +40,8 @@ public class AlarmManager {
         android.app.AlarmManager alarm = (android.app.AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         alarm.cancel(pIntent);
         pIntent.cancel();
+        PrefManager prefs = new PrefManager(context);
+        prefs.setSuiviActive(false);
     }
 
     /**

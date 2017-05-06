@@ -2,13 +2,32 @@
     <string name="app_name">EDTVelizy</string>
     <string name="login_group_url">http://satis.iut-velizy.uvsq.fr/EDT/gindex.html</string>
     <string name="edt_url">http://satis.iut-velizy.uvsq.fr/EDT/</string>
-    <string name="credits">Calendrier: Android Week View de Raquib-ul-Alam\n\nXML Parser: Simple (v2.7.1)\n\nInternet: OkHttp v3 de Square</string>
-    <string name="title_activity_navigate">NavigateActivity</string>
+    <string name="credits">Calendrier: Android Week View de Raquib-ul-Alam\n\nXML Parser: Simple (v2.7.1)\n\nInternet: OkHttp v3 de Square\n\nIcônes de Icons8 et Google\n\nUn remerciement aussi à mes bêta-testeurs acharnés :)</string>
+    <string name="title_activity_navigate">EDT</string>
 
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="navigation_drawer_open">Ouvrir le menu</string>
+    <string name="navigation_drawer_close">Fermer le menu</string>
 
-    <string name="action_settings">Settings</string>
+    <string name="action_settings">Paramètres</string>
+
+    <string name="fichier_histo">historique.xml</string>
+
+    <!-- Intro Slider -->
+    <string name="next">SUIVANT</string>
+    <string name="skip">PASSER</string>
+    <string name="start">COMPRIS</string>
+
+    <string name="slide_1_title">Bienvenue !</string>
+    <string name="slide_1_desc">Laissez moi vous présenter rapidement l\'application :)</string>
+
+    <string name="slide_2_title">Emploi du temps</string>
+    <string name="slide_2_desc">Vous pouvez zoomer, changez le mode de vue, et appuyez sur un cours pour accéder aux informations</string>
+
+    <string name="slide_3_title">Le mode \"Suivi\"</string>
+    <string name="slide_3_desc">Activez le mode Suivi pour être au courant des changement d\'emploi du temps ! Vous pouvez accéder à l\'historique du suivi sur le menu de l\'emploi du temps</string>
+
+    <string name="slide_4_title">Le mode \"Hors Ligne\"</string>
+    <string name="slide_4_desc">Vous avez la possibilité d\'accéder au dernier emploi du temps visionné sans internet. Attention car la version de l\'emploi du temps affiché en mode Hors Ligne n\'est pas à jour !</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

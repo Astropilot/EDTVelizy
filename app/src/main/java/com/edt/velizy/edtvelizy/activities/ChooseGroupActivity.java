@@ -16,6 +16,7 @@ import android.widget.ListView;
 
 import com.edt.velizy.edtvelizy.R;
 import com.edt.velizy.edtvelizy.utils.Internet;
+import com.edt.velizy.edtvelizy.utils.PrefManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +44,7 @@ public class ChooseGroupActivity extends AppCompatActivity {
     /**
      * L'accès aux préférences de l'application
      */
-    private SharedPreferences prefs;
+    private PrefManager prefs;
 
     /**
      * Fonction appelée lors de la création de l'activité
@@ -57,7 +58,7 @@ public class ChooseGroupActivity extends AppCompatActivity {
 
         activityContext = this;
 
-        prefs = getSharedPreferences("Prefs", Context.MODE_PRIVATE);
+        prefs = new PrefManager(this);
 
         // On récupère la liste des groupes, puis on l'affiche dans une ListView
         final String hGroups = i.getStringExtra(LoginActivity.DownloadWebpageTask.mGroups);
@@ -68,7 +69,7 @@ public class ChooseGroupActivity extends AppCompatActivity {
         listGroups.setAdapter(adapter);
 
         // On récupère l'éventuelle dernière selection du groupe, et si on en trouve une on séléctionne directement à cette position
-        String selectionPreference = prefs.getString("EDT_GID", "0");
+        String selectionPreference = prefs.getGroupID();
         listGroups.setItemChecked(Integer.parseInt(selectionPreference), true);
         listGroups.setSelection(Integer.parseInt(selectionPreference));
 
@@ -80,12 +81,24 @@ public class ChooseGroupActivity extends AppCompatActivity {
 
                 // Du coup on sauvegarde ici notre dernier groupe sélectionné
                 int selected_group_index = listGroups.getCheckedItemPosition();
-                SharedPreferences.Editor pref = prefs.edit();
-                pref.putString("EDT_GID", String.valueOf(selected_group_index));
-                pref.commit();
+                prefs.setGroupID(String.valueOf(selected_group_index));
 
                 // On récupère ensuite l'ID du groupe associé
                 String idgroup = ids_groups.get(selected_group_index);
+
+                if(idgroup.equals("g538")) {
+                    AlertDialog alertDialog = new AlertDialog.Builder(activityContext).create();
+                    alertDialog.setTitle("Attention");
+                    alertDialog.setMessage("Le groupe \"IUT\" n'est pas utilisable sur mobile.");
+                    alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            });
+                    alertDialog.show();
+                    return;
+                }
 
                 // On affiche une boite de dialogue d'attente
                 mDialog = new ProgressDialog(ChooseGroupActivity.this);
